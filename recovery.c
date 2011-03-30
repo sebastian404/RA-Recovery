@@ -1520,7 +1520,6 @@ show_menu_other()
 
     static char* items[] = { "- Fix apk uid mismatches",
 			     "- Move recovery.log to SD",
-                             "- Toggle Signature Verify",
 				NULL };
 
     ui_start_menu(headers, items);
