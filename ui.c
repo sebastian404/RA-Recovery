@@ -373,7 +373,7 @@ static void *input_thread(void *cookie)
         // Alt+L or Home+End: toggle log display
         int alt = key_pressed[KEY_LEFTALT] || key_pressed[KEY_RIGHTALT];
         if ((alt && ev.code == KEY_L && ev.value > 0) ||
-            (key_pressed[KEY_HOME] && ev.code == KEY_END && ev.value > 0)) {
+            (key_pressed[KEY_SEND] && ev.code == KEY_END && ev.value > 0)) {
             pthread_mutex_lock(&gUpdateMutex);
             show_text = !show_text;
             update_screen_locked();

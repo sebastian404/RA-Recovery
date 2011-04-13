@@ -61,10 +61,11 @@ void run_script(char *str1,char *str2,char *str3,char *str4,char *str5,char *str
 {
 	ui_print(str1);
         ui_clear_key_queue();
-	ui_print("\nPress Home to confirm,");
+	ui_print("\nPress SEND to confirm,");
+
        	ui_print("\nany other key to abort.\n");
 	int confirm = ui_wait_key();
-		if (confirm == KEY_HOME) {
+		if (confirm == KEY_SEND) {
                 	ui_print(str2);
 		        pid_t pid = fork();
                 	if (pid == 0) {
@@ -112,11 +113,11 @@ void usb_toggle_sdcard()
                 	} else {
                                 ui_clear_key_queue();
                 		ui_print("\nUSB-MS enabled!");
-				ui_print("\nPress Home to disable,");
+				ui_print("\nPress SEND to disable,");
 				ui_print("\nand return to menu\n");
 		       		for (;;) {
         	                        	int key = ui_wait_key();
-						if (key == KEY_HOME) {
+						if (key == KEY_SEND) {
 							ui_print("\nDisabling USB-MS : ");
 						        pid_t pid = fork();
 				                	if (pid == 0) {

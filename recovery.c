@@ -308,7 +308,7 @@ static void
 choose_nandroid_file(const char *nandroid_folder)
 {
     static char* headers[] = { "Choose nandroid-backup,",
-			       "or press BACK to return",
+			       "or press END to return",
                                "",
                                NULL };
 
@@ -399,7 +399,7 @@ choose_nandroid_file(const char *nandroid_folder)
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -407,7 +407,7 @@ choose_nandroid_file(const char *nandroid_folder)
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -419,10 +419,10 @@ choose_nandroid_file(const char *nandroid_folder)
             ui_print("\nRestore ");
             ui_print(list[chosen_item]);
             ui_clear_key_queue();
-            ui_print(" ?\nPress Home to confirm,");
+            ui_print(" ?\nPress SEND to confirm,");
             ui_print("\nany other key to abort.\n");
             int confirm_apply = ui_wait_key();
-            if (confirm_apply == KEY_HOME) {
+            if (confirm_apply == KEY_SEND) {
                       
                             ui_print("\nRestoring : ");
        		            char nandroid_command[200]="/sbin/nandroid-mobile.sh -r -e -a --norecovery --nomisc --nosplash1 --nosplash2 --defaultinput -s ";
@@ -475,7 +475,7 @@ static void
 choose_nandroid_folder()
 {
     static char* headers[] = { "Choose Device-ID,",
-			       "or press BACK to return",
+			       "or press END to return",
                                "",
                                NULL };
 
@@ -565,7 +565,7 @@ choose_nandroid_folder()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -573,7 +573,7 @@ choose_nandroid_folder()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -717,11 +717,11 @@ int get_file_selection(char** headers, char** list) {
                     ++selected;
                     selected = ui_menu_select(selected);
                     break;
-                case KEY_HOME:
+                case KEY_SEND:
                     chosen_item = selected;
 		    if (chosen_item==0) chosen_item = -9;
                     break;
-                case KEY_BACK:
+                case KEY_END:
                     chosen_item = -9;
                     break;
             }
@@ -867,7 +867,7 @@ show_menu_nandroid()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -875,7 +875,7 @@ show_menu_nandroid()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
         
@@ -948,7 +948,7 @@ void show_choose_zip_menu()
     }
 
     static char* headers[] = {  "Choose a zip to apply",
-			        "or press BACK to return",
+			        "or press END to return",
                                 "",
                                 NULL 
     };
@@ -967,11 +967,11 @@ void show_choose_zip_menu()
     ui_print("\nInstall : ");
     ui_print(file + strlen("/sdcard/"));
     ui_clear_key_queue();
-    ui_print(" ? \nPress Home to confirm,");
+    ui_print(" ? \nPress SEND to confirm,");
     ui_print("\nany other key to abort.\n");
 
     int confirm_apply = ui_wait_key();
-    if (confirm_apply == KEY_HOME) {
+    if (confirm_apply == KEY_SEND) {
     	ui_print("\nInstall from sdcard...\n");
         int status = install_package(sdcard_package_file);
 	        if (status != INSTALL_SUCCESS) {
@@ -996,7 +996,7 @@ show_menu_wipe()
 {
 
     static char* headers[] = { "Choose wipe item,",
-			       "or press BACK to return",
+			       "or press END to return",
 			       "",
 			       NULL };
 
@@ -1032,7 +1032,7 @@ show_menu_wipe()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1040,7 +1040,7 @@ show_menu_wipe()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -1054,10 +1054,10 @@ show_menu_wipe()
                 case ITEM_WIPE_ALL:
                     ui_clear_key_queue();
 		    ui_print("\nWipe ALL userdata");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_all = ui_wait_key();
-                    if (confirm_wipe_all == KEY_HOME) {
+                    if (confirm_wipe_all == KEY_SEND) {
                         erase_root("DATA:");
                         erase_root("SDCARD:.android_secure");
                         erase_root("CACHE:");
@@ -1080,10 +1080,10 @@ show_menu_wipe()
                 case ITEM_WIPE_DATA:
                     ui_clear_key_queue();
 		    ui_print("\nWipe /data");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_data = ui_wait_key();
-                    if (confirm_wipe_data == KEY_HOME) {
+                    if (confirm_wipe_data == KEY_SEND) {
                         erase_root("DATA:");
                         ui_print("/data wipe complete!\n\n");
                     } else {
@@ -1095,10 +1095,10 @@ show_menu_wipe()
                 case ITEM_WIPE_EXT:
                     ui_clear_key_queue();
 		    ui_print("\nWipe /sd-ext");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_ext = ui_wait_key();
-                    if (confirm_wipe_ext == KEY_HOME) {
+                    if (confirm_wipe_ext == KEY_SEND) {
                         
 			struct stat st;
         		if (0 != stat("/dev/block/mmcblk0p2", &st))
@@ -1117,10 +1117,10 @@ show_menu_wipe()
                 case ITEM_WIPE_SECURE:
                     ui_clear_key_queue();
 		    ui_print("\nWipe /sdcard/.android_secure");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_secure = ui_wait_key();
-                    if (confirm_wipe_secure == KEY_HOME) {
+                    if (confirm_wipe_secure == KEY_SEND) {
                         erase_root("SDCARD:.android_secure");
                         ui_print("/sdcard/.android_secure wipe complete!\n\n");
                     } else {
@@ -1132,10 +1132,10 @@ show_menu_wipe()
                 case ITEM_WIPE_CACHE:
                     ui_clear_key_queue();
 		    ui_print("\nWipe /cache");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_cache = ui_wait_key();
-                    if (confirm_wipe_cache == KEY_HOME) {
+                    if (confirm_wipe_cache == KEY_SEND) {
                         erase_root("CACHE:");
                         ui_print("/cache wipe complete!\n\n");
                     } else {
@@ -1147,10 +1147,10 @@ show_menu_wipe()
                 case ITEM_WIPE_DALVIK:
                     ui_clear_key_queue();
 		    ui_print("\nWipe Dalvik-cache");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_dalvik = ui_wait_key();
-                    if (confirm_wipe_dalvik == KEY_HOME) {
+                    if (confirm_wipe_dalvik == KEY_SEND) {
                         ui_print("Formatting DATA:dalvik-cache...\n");
                         format_non_mtd_device("DATA:dalvik-cache");
    
@@ -1174,10 +1174,10 @@ show_menu_wipe()
 		case ITEM_WIPE_BAT:
                     ui_clear_key_queue();
 		    ui_print("\nWipe battery stats");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_bat = ui_wait_key();
-                    if (confirm_wipe_bat == KEY_HOME) {
+                    if (confirm_wipe_bat == KEY_SEND) {
                         ui_print("Wiping battery stats...\n");
                         wipe_battery_stats();
                         ui_print("Battery wipe complete!\n\n");
@@ -1191,10 +1191,10 @@ show_menu_wipe()
 		case ITEM_WIPE_ROT:
 		    ui_clear_key_queue();
 		    ui_print("\nWipe rotate settings");
-                    ui_print("\nPress Home to confirm,");
+                    ui_print("\nPress SEND to confirm,");
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_rot = ui_wait_key();
-                    if (confirm_wipe_rot == KEY_HOME) {
+                    if (confirm_wipe_rot == KEY_SEND) {
                         ui_print("Wiping rotate settings...\n");
                         wipe_rotate_settings();
                         ui_print("Rotate settings wipe complete!\n\n");
@@ -1231,7 +1231,7 @@ show_menu_br()
 {
 
     static char* headers[] = { "Choose backup/restore item;",
-			       "or press BACK to return",
+			       "or press END to return",
 			       "",
 			       NULL };
 
@@ -1261,7 +1261,7 @@ show_menu_br()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1269,7 +1269,7 @@ show_menu_br()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -1337,7 +1337,7 @@ show_menu_partition()
 {
 
     static char* headers[] = { "Choose partition item,",
-			       "or press BACK to return",
+			       "or press END to return",
 			       "",
 			       NULL };
 
@@ -1364,7 +1364,7 @@ show_menu_partition()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1372,7 +1372,7 @@ show_menu_partition()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -1386,10 +1386,10 @@ show_menu_partition()
 		case ITEM_PART_SD:
                         ui_clear_key_queue();
 			ui_print("\nPartition sdcard?");
-			ui_print("\nPress Home to confirm,");
+			ui_print("\nPress SEND to confirm,");
 		       	ui_print("\nany other key to abort.");
 			int confirm = ui_wait_key();
-				if (confirm == KEY_HOME) {
+				if (confirm == KEY_SEND) {
 	                                ui_clear_key_queue();
 				       	ui_print("\n\nUse volume-keys to");
 				       	ui_print("\nincrease/decrease size,");
@@ -1400,7 +1400,7 @@ show_menu_partition()
 						sprintf(swapsize, "%4d", swap);
 						ui_print("\rSwap-size  = %s MB",swapsize);
         	                        	int key = ui_wait_key();
-						if (key == KEY_HOME) {
+						if (key == KEY_SEND) {
 	           	                                ui_clear_key_queue();
 							if (swap==0){
 								ui_print("\rSwap-size  = %s MB : NONE\n",swapsize);
@@ -1422,7 +1422,7 @@ show_menu_partition()
 						sprintf(extsize, "%4d", ext);
 						ui_print("\rExt2-size  = %s MB",extsize);
         	                        	int key = ui_wait_key();
-						if (key == KEY_HOME) {
+						if (key == KEY_SEND) {
 	           	                                ui_clear_key_queue();
 							if (ext==0){
 								ui_print("\rExt2-size  = %s MB : NONE\n",extsize);
@@ -1509,7 +1509,7 @@ show_menu_other()
 {
 
     static char* headers[] = { "Choose item,",
-			       "or press BACK to return",
+			       "or press END to return",
 			       "",
 			       NULL };
 
@@ -1533,7 +1533,7 @@ show_menu_other()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1541,7 +1541,7 @@ show_menu_other()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -1595,7 +1595,7 @@ show_menu_flash()
 {
 
     static char* headers[] = { "Choose item,",
-			       "or press BACK to return",
+			       "or press END to return",
 			       "",
 			       NULL };
 
@@ -1618,7 +1618,7 @@ show_menu_flash()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1626,7 +1626,7 @@ show_menu_flash()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
@@ -1736,7 +1736,7 @@ show_menu_mount()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_BACK) {
+        if (key == KEY_END) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1744,7 +1744,7 @@ show_menu_mount()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
 	}
         if (chosen_item >= 0) {
@@ -1815,11 +1815,11 @@ prompt_and_wait()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_VOLUMEUP && ui_key_pressed(KEY_BACK)) {
+        if (key == KEY_VOLUMEUP && ui_key_pressed(KEY_END)) {
             // Wait for the keys to be released, to avoid triggering
             // special boot modes (like coming back into recovery!).
             while (ui_key_pressed(KEY_VOLUMEUP) ||
-                   ui_key_pressed(KEY_BACK)) {
+                   ui_key_pressed(KEY_END)) {
                 usleep(1000);
             }
             chosen_item = ITEM_REBOOT;
@@ -1829,7 +1829,7 @@ prompt_and_wait()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_HOME) && visible ) {
+        } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
         }
 
