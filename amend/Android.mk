@@ -32,6 +32,9 @@ LOCAL_SRC_FILES := \
 		main.c
 
 LOCAL_CFLAGS := $(amend_cflags) -g -O0
+
+LOCAL_MODULE_TAGS := optional
+
 LOCAL_MODULE := amend
 LOCAL_YACCFLAGS := -v
 

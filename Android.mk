@@ -28,6 +28,14 @@ RECOVERY_VERSION := RA-Recovery 2.0.0
 RECOVERY_API_VERSION := 2
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
 
+ifneq ($(BOARD_LDPI_RECOVERY),)
+    LOCAL_CFLAGS += -DBOARD_LDPI_RECOVERY='"$(BOARD_LDPI_RECOVERY)"'
+endif
+
+ifeq ($(BOARD_HAS_FLIPPED_SCREEN), true)
+    LOCAL_CFLAGS += -DBOARD_HAS_FLIPPED_SCREEN
+endif
+
 # This binary is in the recovery ramdisk, which is otherwise a copy of root.
 # It gets copied there in config/Makefile.  LOCAL_MODULE_TAGS suppresses
 # a (redundant) copy of the binary in /system/bin for user builds.

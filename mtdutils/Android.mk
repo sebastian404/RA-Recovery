@@ -14,6 +14,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES := flash_image.c
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := flash_image
 LOCAL_STATIC_LIBRARIES := libmtdutils
 LOCAL_SHARED_LIBRARIES := libcutils libc

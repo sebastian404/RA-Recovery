@@ -34,8 +34,13 @@
 #define MENU_MAX_COLS 64
 #define MENU_MAX_ROWS 250
 
-#define CHAR_WIDTH 10
-#define CHAR_HEIGHT 18
+#ifndef BOARD_LDPI_RECOVERY
+  #define CHAR_WIDTH 10
+  #define CHAR_HEIGHT 18
+#else
+  #define CHAR_WIDTH 7
+  #define CHAR_HEIGHT 16
+#endif
 
 #define PROGRESSBAR_INDETERMINATE_STATES 6
 #define PROGRESSBAR_INDETERMINATE_FPS 15
@@ -268,12 +273,16 @@ static void update_screen_locked(void)
 // Should only be called with gUpdateMutex locked.
 static void update_progress_locked(void)
 {
+#ifdef BOARD_HAS_FLIPPED_SCREEN
+    draw_screen_locked();
+#else
     if (show_text || !gPagesIdentical) {
         draw_screen_locked();    // Must redraw the whole screen
         gPagesIdentical = 1;
     } else {
         draw_progress_locked();  // Draw only the progress bar
     }
+#endif
     gr_flip();
 }
 

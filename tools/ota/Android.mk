@@ -15,6 +15,7 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := make-update-script
 LOCAL_SRC_FILES := make-update-script.c
 include $(BUILD_HOST_EXECUTABLE)
@@ -23,18 +24,20 @@ ifneq ($(TARGET_SIMULATOR),true)
 
 include $(CLEAR_VARS)
 LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := add-property-tag
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
-LOCAL_MODULE_TAGS := debug
+LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := add-property-tag.c
 LOCAL_STATIC_LIBRARIES := libc
 include $(BUILD_EXECUTABLE)
 
 include $(CLEAR_VARS)
 LOCAL_FORCE_STATIC_EXECUTABLE := true
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := check-lost+found
 LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
-LOCAL_MODULE_TAGS := debug
+LOCAL_MODULE_TAGS := optional
 LOCAL_SRC_FILES := check-lost+found.c
 LOCAL_STATIC_LIBRARIES := libcutils libc
 include $(BUILD_EXECUTABLE)
