@@ -18,6 +18,7 @@
 # pensive added list updates (more precisely *.zip) anywhere on the sdcard
 # Amon_RA : ext restore -> added check if ext backup is existing
 # Amon_RA : ext restore -> added check if ext parition is existing
+# Amon_RA -> added wimax restore/backup
 
 # Requirements:
 
@@ -119,7 +120,7 @@ NAMESERVER2=64.46.128.4
 # /system/bin/rild& exits immediately, todo?
 
 
-DEVICEID=`cat /proc/cmdline | sed "s/.*serialno=//" | cut -d" " -f1`
+DEVICEID=`cat /default.prop | grep "product.name" | cut -d"=" -f2`
 
 # This is the default repository for backups
 BACKUPPATH="/sdcard/nandroid/$DEVICEID"
@@ -148,19 +149,6 @@ echo2log()
     fi
 }
 
-batteryAtLeast()
-{
-                REQUIREDLEVEL=$1
-		ENERGY=`cat /sys/class/power_supply/battery/capacity`
-		if [ "`cat /sys/class/power_supply/battery/status`" == "Charging" ]; then
-			ENERGY=100
-		fi
-		if [ ! $ENERGY -ge $REQUIREDLEVEL ]; then
-			$ECHO "Error: not enough battery power, need at least $REQUIREDLEVEL%."
-			$ECHO "Connect charger or USB power and try again"
-			exit 1
-		fi
-}
 
 if [ "`echo $0 | grep /sbin/nandroid-mobile.sh`" == "" ]; then
     cp $0 /sbin
@@ -186,7 +174,7 @@ esac
 ECHO=echo
 OUTPUT=""
 
-for option in $(getopt --name="nandroid-mobile v2.2.2" -l norecovery -l noboot -l nodata -l nosystem -l nocache -l nomisc -l nosplash1 -l nosplash2 -l subname: -l backup -l restore -l compress -l getupdate -l delete -l path -l webget: -l webgettarget: -l nameserver: -l nameserver2: -l bzip2: -l defaultinput -l autoreboot -l autoapplyupdate -l ext -l android_secure -l save: -l switchto: -l listbackup -l listupdate -l silent -l quiet -l help -- "cbruds:p:eaql" "$@"); do
+for option in $(getopt --name="nandroid-mobile v2.2.2" -l norecovery -l noboot -l nodata -l nosystem -l nocache -l nomisc -l nosplash1 -l nowimax -l nosplash2 -l subname: -l backup -l restore -l compress -l getupdate -l delete -l path -l webget: -l webgettarget: -l nameserver: -l nameserver2: -l bzip2: -l defaultinput -l autoreboot -l autoapplyupdate -l ext -l android_secure -l save: -l switchto: -l listbackup -l listupdate -l silent -l quiet -l help -- "cbruds:p:eaql" "$@"); do
     case $option in
         --silent)
             ECHO=echo2log
@@ -300,6 +288,8 @@ for option in $(getopt --name="nandroid-mobile v2.2.2" -l norecovery -l noboot -
             $ECHO ""
             $ECHO "--nosplash2                Will suppress restore/backup of the splash2 partition"
             $ECHO ""
+            $ECHO "--nowimax                  Will suppress restore/backup of the wimax partition"
+            $ECHO ""
             $ECHO "--defaultinput             Makes nandroid-mobile non-interactive, assumes default"
             $ECHO "                           inputs from the user."
             $ECHO ""
@@ -368,6 +358,11 @@ for option in $(getopt --name="nandroid-mobile v2.2.2" -l norecovery -l noboot -
         --nosplash2)
             NOSPLASH2=1
             #$ECHO "No splash2"
+            shift
+            ;;
+        --nowimax)
+            NOWIMAX=1
+            #$ECHO "No wimax"
             shift
             ;;
         --backup)
@@ -751,17 +746,6 @@ fi
 
 
 if [ "$RESTORE" == 1 ]; then
-                batteryAtLeast 30
-#		ENERGY=`cat /sys/class/power_supply/battery/capacity`
-#		if [ "`cat /sys/class/power_supply/battery/status`" == "Charging" ]; then
-#			ENERGY=100
-#		fi
-#		if [ ! $ENERGY -ge 30 ]; then
-#			$ECHO "Error: not enough battery power"
-#			$ECHO "Connect charger or USB power and try again"
-#			exit 1
-#		fi
-
 
                 umount /sdcard 2>/dev/null
 		mount /sdcard 2>/dev/null
@@ -898,6 +882,10 @@ if [ "$RESTORE" == 1 ]; then
                 if [ `ls system* 2>/dev/null | wc -l` == 0 ]; then
                     NOSYSTEM=1
                 fi
+		# Amon_RA : If there's no wimax backup set nowimax to 1 so wimax restore doesn't start                
+                if [ `ls wimax* 2>/dev/null | wc -l` == 0 ]; then
+                    NOWIMAX=1
+                fi
 		# Amon_RA : If there's no ext backup set ext to 0 so ext restore doesn't start                
 		if [ `ls ext* 2>/dev/null | wc -l` == 0 ]; then
                     EXT=0
@@ -907,8 +895,7 @@ if [ "$RESTORE" == 1 ]; then
                     ANDROID_SECURE=0
                 fi
 
-
-		for image in boot recovery; do
+		for image in boot recovery wimax; do
                     if [ "$NOBOOT" == "1" -a "$image" == "boot" ]; then
                         $ECHO ""
                         $ECHO "Not flashing boot image!"
@@ -918,6 +905,12 @@ if [ "$RESTORE" == 1 ]; then
                     if [ "$NORECOVERY" == "1" -a "$image" == "recovery" ]; then
                         $ECHO ""
                         $ECHO "Not flashing recovery image!"
+                        $ECHO ""
+                        continue
+                    fi
+                    if [ "$NOWIMAX" == "1" -a "$image" == "wimax" ]; then
+                        $ECHO ""
+                        $ECHO "Not flashing wimax image!"
                         $ECHO ""
                         continue
                     fi
@@ -1033,19 +1026,6 @@ fi
 # 2.
 if [ "$BACKUP" == 1 ]; then
 
-    if [ "$COMPRESS" == 1 ]; then
-        ENERGY=`cat /sys/class/power_supply/battery/capacity`
-        if [ "`cat /sys/class/power_supply/battery/status`" == "Charging" ]; then
-            ENERGY=100
-        fi
-        if [ ! $ENERGY -ge 30 ]; then
-            $ECHO "Warning: Not enough battery power to perform compression."
-            COMPRESS=0
-            $ECHO "Turning off compression option, you can compress the backup later"
-            $ECHO "with the compression options."
-        fi
-    fi
-
 $ECHO "mounting system and data read-only, sdcard read-write"
 umount /system 2>/dev/null
 umount /data 2>/dev/null
@@ -1099,6 +1079,10 @@ if [ "$NOSPLASH1" == 0 ]; then
 fi
 if [ "$NOSPLASH2" == 0 ]; then
     BACKUPLEGEND=$BACKUPLEGEND"2"
+fi
+
+if [ "$NOWIMAX" == 0 ]; then
+    BACKUPLEGEND=$BACKUPLEGEND"W"
 fi
 
 if [ ! "$BACKUPLEGEND" == "" ]; then
@@ -1163,7 +1147,7 @@ fi
 
 
 # 5.
-for image in boot recovery misc; do
+for image in boot recovery misc wimax; do
 
     case $image in
         boot)
@@ -1184,6 +1168,13 @@ for image in boot recovery misc; do
                 continue
             fi
             ;;
+        wimax)
+            if [ "$NOWIMAX" == 1 ]; then
+                $ECHO "Dump of the wimax partition suppressed."
+                continue
+            fi
+            ;;
+
     esac
 
 	# 5a
@@ -1259,7 +1250,7 @@ if [ "$EXT" == 1 ]; then
     CHECK=`mount | grep /sd-ext`
     if [ "$CHECK" == "" ]; then
           $ECHO "Warning: --ext specified but unable to mount the ext partition."
-          exit 1
+          $ECHO "Skipping /sd-ext backup."
     else
         
         CWD=`pwd`
