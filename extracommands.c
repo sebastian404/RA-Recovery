@@ -48,7 +48,7 @@ To handle formatting non yaffs2 partitions like the ext3 /data & /cache on Incre
 
 #include <sys/limits.h>
 
-int signature_check_enabled = 1;
+int signature_check_enabled = 0;
 
 void toggle_signature_check()
 {
@@ -62,7 +62,6 @@ void run_script(char *str1,char *str2,char *str3,char *str4,char *str5,char *str
 	ui_print(str1);
         ui_clear_key_queue();
 	ui_print("\nPress SEND to confirm,");
-
        	ui_print("\nany other key to abort.\n");
 	int confirm = ui_wait_key();
 		if (confirm == KEY_SEND) {
