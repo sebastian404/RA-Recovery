@@ -425,7 +425,7 @@ choose_nandroid_file(const char *nandroid_folder)
             if (confirm_apply == KEY_HOME) {
                       
                             ui_print("\nRestoring : ");
-       		            char nandroid_command[200]="/sbin/nandroid-mobile.sh -r -e -a --norecovery --nomisc --nosplash1 --nosplash2 --defaultinput -s --nowimax";
+       		            char nandroid_command[200]="/sbin/nandroid-mobile.sh -r -e -a --norecovery --nomisc --nosplash1 --nosplash2 --defaultinput --nowimax -s ";
 
 			    strlcat(nandroid_command, list[chosen_item], sizeof(nandroid_command));
 
