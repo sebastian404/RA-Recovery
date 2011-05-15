@@ -3,7 +3,8 @@
 #when       whom            what, where, why
 #--------   ----            ---------------------------------------------------
 #2010-12-08 sebastian404    inital build
-#2011-01-07 sebattian404    add RA-Recovery dependancies
+#2011-01-07 sebastian404    add RA-Recovery dependancies
+#2011-03-31 sebastian404    fix usbconfig for 2.6.32 kernel
 ##########################################
 
 on early-init
@@ -23,15 +24,20 @@ on init
     mkdir /system 0771 system system
     mkdir /data 0771 system system
     mkdir /cache 0770 system cache
+    mkdir /etc 0770 root root
     mkdir /tmp 01777 root root
 
     # mount inital filesystems
-    mount tmpfs tmpfs /tmp size=4mi
+    mount tmpfs tmpfs /tmp size=8m
+    devwait /dev/block/mmcblk0p1
+    mount vfat /dev/block/mmcblk0p1 /sdcard rw
 
     # RA-Recovery required
     symlink /system/etc /etc
-    symlink /sbin/busybox /sbin/sh
+
     chmod 0755 /sbin/busybox
+    symlink /sbin/busybox /sbin/sh
+
 
 on boot
     ifup lo
@@ -40,8 +46,9 @@ on boot
     class_start default
 
 service usbconfig /sbin/usbconfig
+    oneshot
 
-service recovery /sbin/recovery.sh
+service recovery /sbin/recovery
 
 service adbd /sbin/adbd recovery
 
