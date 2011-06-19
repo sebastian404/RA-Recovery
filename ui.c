@@ -28,6 +28,12 @@
 #include "common.h"
 #include "minui/minui.h"
 
+#ifdef BOARD_HAS_NO_SELECT_BUTTON
+static int gShowBackButton = 1;
+#else
+static int gShowBackButton = 0;
+#endif
+
 #define MAX_COLS 64
 #define MAX_ROWS 64
 
@@ -545,12 +551,21 @@ void ui_start_menu(char** headers, char** items) {
             menu[i][text_cols-1] = '\0';
         }
 
+        if (gShowBackButton) {
+            strcpy(menu[i], "- Go Back");
+            ++i;
+        }
+
         menu_items = i - menu_top;
         show_menu = 1;
         menu_sel = menu_show_start = 0;
         update_screen_locked();
     }
     pthread_mutex_unlock(&gUpdateMutex);
+    if (gShowBackButton) {
+        return menu_items - 1;
+    }
+    return menu_items;
 }
 
 int ui_menu_select(int sel) {
@@ -639,3 +654,12 @@ void ui_clear_key_queue() {
     key_queue_len = 0;
     pthread_mutex_unlock(&key_queue_mutex);
 }
+
+void ui_set_showing_back_button(int showBackButton) {
+    gShowBackButton = showBackButton;
+}
+
+int ui_get_showing_back_button() {
+    return gShowBackButton;
+}
+
