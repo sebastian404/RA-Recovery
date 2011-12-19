@@ -60,6 +60,7 @@ static const char *NANDROID_PATH = "SDCARD:/nandroid/";
 #define SDCARD_PATH_LENGTH 7
 #define NANDROID_PATH_LENGTH 17
 static const char *TEMPORARY_LOG_FILE = "/tmp/recovery.log";
+static int allow_display_toggle = 1;
 
 void free_string_array(char** array);
 char* choose_file_menu(const char* directory, const char* fileExtensionOrDirectory, const char* headers[]);
@@ -409,6 +410,15 @@ choose_nandroid_file(const char *nandroid_folder)
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == (total+1))
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -419,11 +429,16 @@ choose_nandroid_file(const char *nandroid_folder)
             ui_print("\nRestore ");
             ui_print(list[chosen_item]);
             ui_clear_key_queue();
-            ui_print(" ?\nPress SEND to confirm,");
+            if (ui_get_showing_back_button()) {
+             	ui_print("\nPress Power to confirm,");
+	    }
+            else
+            {
+               	ui_print("\nPress Home to confirm,");
+            }
             ui_print("\nany other key to abort.\n");
             int confirm_apply = ui_wait_key();
-            if (confirm_apply == KEY_SEND) {
-                      
+            if ((confirm_apply == KEY_HOME) || ( ui_get_showing_back_button() && confirm_apply == KEY_POWER) ) {
                             ui_print("\nRestoring : ");
        		            char nandroid_command[200]="/sbin/nandroid-mobile.sh -r -e -a --norecovery --nomisc --nosplash1 --nosplash2 --defaultinput --nowimax -s ";
 
@@ -575,6 +590,15 @@ choose_nandroid_folder()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == (total+1))
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -721,7 +745,13 @@ int get_file_selection(char** headers, char** list) {
                     chosen_item = selected;
 		    if (chosen_item==0) chosen_item = -9;
                     break;
-                case KEY_END:
+		case KEY_POWER:
+		    if ( ui_get_showing_back_button() ) {
+		        chosen_item = selected;
+                        if (chosen_item==0) chosen_item = -9;
+		    }
+                    break;
+                case KEY_BACK:
                     chosen_item = -9;
                     break;
             }
@@ -877,8 +907,17 @@ show_menu_nandroid()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
         }
-        
+
+        if (chosen_item == 8)
+        {
+            break;
+        }
+
         if (chosen_item >= 0) {
 
             // turn off the menu, letting ui_print() to scroll output
@@ -901,17 +940,14 @@ show_menu_nandroid()
                 int i=0;
 		while (items[i])
 		{
-
-
-				if (!strcmp (items[i],"- [X] sd-ext")) strcat(nandroid_command, " -e");
-				if (!strcmp (items[i],"- [X] .android_secure")) strcat(nandroid_command, " -a");
-				if (!strcmp (items[i],"- [ ] recovery")) strcat(nandroid_command, " --norecovery");
-				if (!strcmp (items[i],"- [ ] boot")) strcat(nandroid_command, " --noboot");
-				if (!strcmp (items[i],"- [ ] data")) strcat(nandroid_command, " --nodata");
-				if (!strcmp (items[i],"- [ ] system")) strcat(nandroid_command, " --nosystem");
-				if (!strcmp (items[i],"- [ ] cache")) strcat(nandroid_command, " --nocache");
-                	        
-		i++;	
+			if (!strcmp (items[i],"- [X] sd-ext")) strcat(nandroid_command, " -e");
+			if (!strcmp (items[i],"- [X] .android_secure")) strcat(nandroid_command, " -a");
+			if (!strcmp (items[i],"- [ ] recovery")) strcat(nandroid_command, " --norecovery");
+			if (!strcmp (items[i],"- [ ] boot")) strcat(nandroid_command, " --noboot");
+			if (!strcmp (items[i],"- [ ] data")) strcat(nandroid_command, " --nodata");
+			if (!strcmp (items[i],"- [ ] system")) strcat(nandroid_command, " --nosystem");
+			if (!strcmp (items[i],"- [ ] cache")) strcat(nandroid_command, " --nocache");
+			i++;	
 		}
 
 			run_script("\nCreate Nandroid backup?",
@@ -967,11 +1003,17 @@ void show_choose_zip_menu()
     ui_print("\nInstall : ");
     ui_print(file + strlen("/sdcard/"));
     ui_clear_key_queue();
-    ui_print(" ? \nPress SEND to confirm,");
+    if (ui_get_showing_back_button()) {
+    	ui_print("\nPress Power to confirm,");
+    }
+    else
+    {
+    	ui_print("\nPress Home to confirm,");
+    }
     ui_print("\nany other key to abort.\n");
 
     int confirm_apply = ui_wait_key();
-    if (confirm_apply == KEY_SEND) {
+    if ((confirm_apply == KEY_HOME) || ( ui_get_showing_back_button() && confirm_apply == KEY_POWER) ) {
     	ui_print("\nInstall from sdcard...\n");
         int status = install_package(sdcard_package_file);
 	        if (status != INSTALL_SUCCESS) {
@@ -1013,6 +1055,7 @@ show_menu_wipe()
 #define ITEM_WIPE_EXT      8
 #define ITEM_WIPE_BAT      9
 #define ITEM_WIPE_ROT      10
+#define ITEM_WIPE_BACK     11
 
     static char* items[] = { "- Wipe ALL data/factory reset",
                              "- Wipe CACHE:",
@@ -1048,6 +1091,15 @@ show_menu_wipe()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == ITEM_WIPE_BACK)
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -1059,11 +1111,17 @@ show_menu_wipe()
 
                 case ITEM_WIPE_ALL:
                     ui_clear_key_queue();
-		            ui_print("\nWipe ALL userdata");
-                    ui_print("\nPress SEND to confirm,");
+		    ui_print("\nWipe ALL userdata");
+                    if (ui_get_showing_back_button()) {
+                      	ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                       	ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_all = ui_wait_key();
-                    if (confirm_wipe_all == KEY_SEND) {
+                    if ((confirm_wipe_all == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_all == KEY_POWER) ) {
                         erase_root("DATA:");
                         erase_root("SDCARD:.android_secure");
                         erase_root("CACHE:");
@@ -1086,10 +1144,15 @@ show_menu_wipe()
                 case ITEM_WIPE_CACHE:
                     ui_clear_key_queue();
 		    ui_print("\nWipe CACHE:");
-                    ui_print("\nPress SEND to confirm,");
-                    ui_print("\nany other key to abort.\n\n");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     int confirm_wipe_cache = ui_wait_key();
-                    if (confirm_wipe_cache == KEY_SEND) {
+                    if ((confirm_wipe_cache == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_cache == KEY_POWER) ) {
                         erase_root("CACHE:");
                         ui_print("CACHE: wipe complete!\n\n");
                     } else {
@@ -1101,10 +1164,16 @@ show_menu_wipe()
                 case ITEM_WIPE_DALVIK:
                     ui_clear_key_queue();
 		    ui_print("\nWipe DALVIK-CACHE:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_dalvik = ui_wait_key();
-                    if (confirm_wipe_dalvik == KEY_SEND) {
+                    if ((confirm_wipe_dalvik == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_dalvik == KEY_POWER) ) {
                         ui_print("Formatting DATA:dalvik-cache...\n");
                         format_non_mtd_device("DATA:dalvik-cache");
 
@@ -1128,10 +1197,16 @@ show_menu_wipe()
                 case ITEM_WIPE_DATA:
                     ui_clear_key_queue();
 		    ui_print("\nWipe DATA:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_data = ui_wait_key();
-                    if (confirm_wipe_data == KEY_SEND) {
+                    if ((confirm_wipe_data == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_data == KEY_POWER) ) {
                         erase_root("DATA:");
                         ui_print("DATA: wipe complete!\n\n");
                     } else {
@@ -1143,10 +1218,16 @@ show_menu_wipe()
                 case ITEM_WIPE_SECURE:
                     ui_clear_key_queue();
 		    ui_print("\nWipe SDCARD:.android_secure");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_secure = ui_wait_key();
-                    if (confirm_wipe_secure == KEY_SEND) {
+                    if ((confirm_wipe_secure == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_secure == KEY_POWER) ) {
                         erase_root("SDCARD:.android_secure");
                         ui_print("SDCARD:.android_secure wipe complete!\n\n");
                     } else {
@@ -1158,10 +1239,16 @@ show_menu_wipe()
                 case ITEM_WIPE_BOOT:
                     ui_clear_key_queue();
 		    ui_print("\nWipe BOOT:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_boot = ui_wait_key();
-                    if (confirm_wipe_boot == KEY_SEND) {
+                    if ((confirm_wipe_boot == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_boot == KEY_POWER) ) {
                         erase_root("BOOT:");
                         ui_print("BOOT: wipe complete!\n\n");
                     } else {
@@ -1173,10 +1260,16 @@ show_menu_wipe()
                 case ITEM_WIPE_SYSTEM:
                     ui_clear_key_queue();
 		    ui_print("\nWipe SYSTEM:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_system = ui_wait_key();
-                    if (confirm_wipe_system == KEY_SEND) {
+                    if ((confirm_wipe_system == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_system == KEY_POWER) ) {
                         erase_root("SYSTEM:");
                         ui_print("SYSTEM: wipe complete!\n\n");
                     } else {
@@ -1188,10 +1281,16 @@ show_menu_wipe()
                 case ITEM_WIPE_SDCARD:
                     ui_clear_key_queue();
 		    ui_print("\nWipe SDCARD:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_sdcard = ui_wait_key();
-                    if (confirm_wipe_sdcard == KEY_SEND) {
+                    if ((confirm_wipe_sdcard == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_sdcard == KEY_POWER) ) {
                         erase_root("SDCARD:");
                         ui_print("SDCARD: wipe complete!\n\n");
                     } else {
@@ -1203,11 +1302,16 @@ show_menu_wipe()
                 case ITEM_WIPE_EXT:
                     ui_clear_key_queue();
 		    ui_print("\nWipe SDEXT:");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_ext = ui_wait_key();
-                    if (confirm_wipe_ext == KEY_SEND) {
-                        
+                    if ((confirm_wipe_ext == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_ext == KEY_POWER) ) {
 			struct stat st;
         		if (0 != stat("/dev/block/mmcblk0p2", &st))
 		        {
@@ -1225,10 +1329,16 @@ show_menu_wipe()
 		case ITEM_WIPE_BAT:
                     ui_clear_key_queue();
 		    ui_print("\nWipe battery stats");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_bat = ui_wait_key();
-                    if (confirm_wipe_bat == KEY_SEND) {
+                    if ((confirm_wipe_bat == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_bat == KEY_POWER) ) {
                         ui_print("Wiping battery stats...\n");
                         wipe_battery_stats();
                         ui_print("Battery wipe complete!\n\n");
@@ -1241,10 +1351,16 @@ show_menu_wipe()
 		case ITEM_WIPE_ROT:
 		    ui_clear_key_queue();
 		    ui_print("\nWipe rotate settings");
-                    ui_print("\nPress SEND to confirm,");
+                    if (ui_get_showing_back_button()) {
+                        ui_print("\nPress Power to confirm,");
+                    }
+                    else
+                    {
+                        ui_print("\nPress Home to confirm,");
+                    }
                     ui_print("\nany other key to abort.\n\n");
                     int confirm_wipe_rot = ui_wait_key();
-                    if (confirm_wipe_rot == KEY_SEND) {
+                    if ((confirm_wipe_rot == KEY_HOME) || ( ui_get_showing_back_button() && confirm_wipe_rot == KEY_POWER) ) {
                         ui_print("Wiping rotate settings...\n");
                         wipe_rotate_settings();
                         ui_print("Rotate settings wipe complete!\n\n");
@@ -1289,8 +1405,7 @@ show_menu_br()
 #define ITEM_NANDROID_RES  1 
 #define ITEM_GOOG_BCK  2 
 #define ITEM_GOOG_RES  3 
-
-
+#define ITEM_BACK 4
 
     static char* items[] = { "- Nand backup",
 			     "- Nand restore",
@@ -1319,6 +1434,15 @@ show_menu_br()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == ITEM_BACK)
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -1394,6 +1518,7 @@ show_menu_partition()
 #define ITEM_PART_REP      1
 #define ITEM_PART_EXT3     2
 #define ITEM_PART_EXT4     3
+#define ITEM_PART_BACK	   4
 
     static char* items[] = { "- Partition SD",
 			     "- Repair SD:ext",
@@ -1422,6 +1547,15 @@ show_menu_partition()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == ITEM_PART_BACK)
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -1434,21 +1568,33 @@ show_menu_partition()
 		case ITEM_PART_SD:
                         ui_clear_key_queue();
 			ui_print("\nPartition sdcard?");
-			ui_print("\nPress END to confirm,");
+			if (ui_get_showing_back_button()) {
+                        	ui_print("\nPress Power to confirm,");
+                    	}
+                    	else
+                    	{
+                        	ui_print("\nPress Home to confirm,");
+                    	}
 		       	ui_print("\nany other key to abort.");
 			int confirm = ui_wait_key();
-				if (confirm == KEY_SEND) {
+				if ((confirm == KEY_HOME) || ( ui_get_showing_back_button() && confirm == KEY_POWER) ) {
 	                                ui_clear_key_queue();
 				       	ui_print("\n\nUse volume-keys to");
 				       	ui_print("\nincrease/decrease size,");
-				       	ui_print("\nHome to set (0=NONE) :\n\n");
+					if (ui_get_showing_back_button()) {
+                                		ui_print("\nPower to set (0=NONE) :\n\n");
+                        		}
+                        		else
+                        		{
+                                		ui_print("\nHome to set (0=NONE) :\n\n");
+                        		}
 					char swapsize[32];
 					int swap = 32;
 					for (;;) {
 						sprintf(swapsize, "%4d", swap);
 						ui_print("\rSwap-size  = %s MB",swapsize);
         	                        	int key = ui_wait_key();
-						if (key == KEY_SEND) {
+						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && key == KEY_POWER) ) {
 	           	                                ui_clear_key_queue();
 							if (swap==0){
 								ui_print("\rSwap-size  = %s MB : NONE\n",swapsize);
@@ -1471,6 +1617,7 @@ show_menu_partition()
 						ui_print("\rExt2-size  = %s MB",extsize);
         	                        	int key = ui_wait_key();
 						if (key == KEY_SEND) {
+						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && key == KEY_POWER) ) {
 	           	                                ui_clear_key_queue();
 							if (ext==0){
 								ui_print("\rExt2-size  = %s MB : NONE\n",extsize);
@@ -1564,7 +1711,7 @@ show_menu_other()
 // these constants correspond to elements of the items[] list.
 #define ITEM_OTHER_FIXUID 0
 #define ITEM_OTHER_RE2SD  1
-#define ITEM_OTHER_TOGGLE 2
+#define ITEM_OTHER_BACK 2
 
     static char* items[] = { "- Fix apk uid mismatches",
 			     "- Move recovery.log to SD",
@@ -1591,8 +1738,17 @@ show_menu_other()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
         }
-
+   
+        if (chosen_item == ITEM_OTHER_BACK)
+        {
+            break;
+        }    
+    
         if (chosen_item >= 0) {
             // turn off the menu, letting ui_print() to scroll output
             // on the screen.
@@ -1619,7 +1775,6 @@ show_menu_other()
 				   "\nMoving complete!\n\n",
 				   "\nMoving aborted!\n\n");
 			break;
-		
             }
 
             // if we didn't return from this function to reboot, show
@@ -1650,6 +1805,7 @@ show_menu_flash()
 // these constants correspond to elements of the items[] list.
 #define ITEM_FLASH_FLASHZIP 0
 #define ITEM_FLASH_TOGGLE   1
+#define ITEM_FLASH_BACK     2
 
     static char* items[] = { "- Choose zip from sdcard",
                              "- Toggle signature verification",
@@ -1676,6 +1832,15 @@ show_menu_flash()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (chosen_item == ITEM_FLASH_BACK)
+        {
+            break;
         }
 
         if (chosen_item >= 0) {
@@ -1794,13 +1959,22 @@ show_menu_mount()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
+        } else if ((key == KEY_POWER) && visible ) {
+            if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+        }
+
+        if (items[chosen_item] == NULL) {
+            break;
 	}
+
         if (chosen_item >= 0) {
             // turn off the menu, letting ui_print() to scroll output
             // on the screen.
             ui_end_menu();
 
-			// Rebuild items
+	    // Rebuild items
             create_mount_items(items, selected);
 						
             // if we didn't return from this function to reboot, show
@@ -1855,7 +2029,8 @@ prompt_and_wait()
     ui_start_menu(headers, items);
     int selected = 0;
     int chosen_item = -1;
-
+    allow_display_toggle = 0;    
+ 
     finish_recovery(NULL);
     ui_reset_progress();
     for (;;) {
@@ -1879,7 +2054,11 @@ prompt_and_wait()
             selected = ui_menu_select(selected);
         } else if ((key == KEY_SEND) && visible ) {
             chosen_item = selected;
-        }
+        } else if ((key == KEY_POWER) && visible ) {
+	    if (ui_get_showing_back_button()) {
+                    chosen_item = selected;
+                }
+	}
 
         if (chosen_item >= 0) {
             // turn off the menu, letting ui_print() to scroll output
@@ -2046,3 +2225,8 @@ main(int argc, char **argv)
 	
     return EXIT_SUCCESS;
 }
+
+int get_allow_toggle_display() {
+    return allow_display_toggle;
+}
+
