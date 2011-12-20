@@ -23,8 +23,9 @@ LOCAL_MODULE := recovery
 
 LOCAL_FORCE_STATIC_EXECUTABLE := true
 
-RECOVERY_VERSION := RA-Recovery 2.0.0
+RECOVERY_VERSION := RA-Recovery 3.2
 
+LOCAL_CFLAGS += -DRECOVERY_VERSION="$(RECOVERY_VERSION)"
 RECOVERY_API_VERSION := 2
 LOCAL_CFLAGS += -DRECOVERY_API_VERSION=$(RECOVERY_API_VERSION)
 
@@ -34,6 +35,10 @@ endif
 
 ifeq ($(BOARD_HAS_FLIPPED_SCREEN), true)
     LOCAL_CFLAGS += -DBOARD_HAS_FLIPPED_SCREEN
+endif
+
+ifeq ($(BOARD_HAS_NO_SELECT_BUTTON), true)
+    LOCAL_CFLAGS += -DBOARD_HAS_NO_SELECT_BUTTON
 endif
 
 # This binary is in the recovery ramdisk, which is otherwise a copy of root.

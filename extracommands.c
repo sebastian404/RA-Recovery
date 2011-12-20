@@ -128,7 +128,7 @@ void usb_toggle_sdcard()
 				ui_print("\nand return to menu\n");
 		       		for (;;) {
         	                        	int key = ui_wait_key();
-						if (key == KEY_SEND) {
+						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && key == KEY_POWER) ) {
 							ui_print("\nDisabling USB-MS : ");
 						        pid_t pid = fork();
 				                	if (pid == 0) {

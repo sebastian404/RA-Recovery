@@ -5,13 +5,13 @@
 #2010-12-08 sebastian404    inital build
 #2011-01-07 sebastian404    add RA-Recovery dependancies
 #2011-03-31 sebastian404    fix usbconfig for 2.6.32 kernel
+#2011-12-19 sebastian404    clean up
 ##########################################
 
 on early-init
     exec /sbin/usbconfig
 
 on init
-
     # setup enviroment
     export PATH /sbin
     export ANDROID_ROOT /system
@@ -27,14 +27,8 @@ on init
     mkdir /etc 0770 root root
     mkdir /tmp 01777 root root
 
-    # mount inital filesystems
-    mount tmpfs tmpfs /tmp size=8m
-    devwait /dev/block/mmcblk0p1
-    mount vfat /dev/block/mmcblk0p1 /sdcard rw
-
     # RA-Recovery required
     symlink /system/etc /etc
-
     chmod 0755 /sbin/busybox
     symlink /sbin/busybox /sbin/sh
 
@@ -45,12 +39,23 @@ on boot
     domainname localdomain
     class_start default
 
+    # mount inital filesystems
+    mount tmpfs tmpfs /tmp size=64m
+    devwait /dev/block/mmcblk0p1
+    mount vfat /dev/block/mmcblk0p1 /sdcard rw
+
+    # turn up backlight & keypad
+    write /sys/class/leds/lcd-backlight/brightness 255
+    write /sys/class/leds/button-backlight/brightness 255
+
 service usbconfig /sbin/usbconfig
     oneshot
 
 service recovery /sbin/recovery
+    oneshot
 
 service adbd /sbin/adbd recovery
+    disabled
 
 on property:persist.service.adb.enable=1
     start adbd

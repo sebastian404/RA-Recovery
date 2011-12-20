@@ -309,7 +309,7 @@ static void
 choose_nandroid_file(const char *nandroid_folder)
 {
     static char* headers[] = { "Choose nandroid-backup,",
-			       "or press END to return",
+			       "or press BACK to return",
                                "",
                                NULL };
 
@@ -400,7 +400,7 @@ choose_nandroid_file(const char *nandroid_folder)
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -408,7 +408,7 @@ choose_nandroid_file(const char *nandroid_folder)
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -439,6 +439,7 @@ choose_nandroid_file(const char *nandroid_folder)
             ui_print("\nany other key to abort.\n");
             int confirm_apply = ui_wait_key();
             if ((confirm_apply == KEY_HOME) || ( ui_get_showing_back_button() && confirm_apply == KEY_POWER) ) {
+                      
                             ui_print("\nRestoring : ");
        		            char nandroid_command[200]="/sbin/nandroid-mobile.sh -r -e -a --norecovery --nomisc --nosplash1 --nosplash2 --defaultinput --nowimax -s ";
 
@@ -490,7 +491,7 @@ static void
 choose_nandroid_folder()
 {
     static char* headers[] = { "Choose Device-ID,",
-			       "or press END to return",
+			       "or press BACK to return",
                                "",
                                NULL };
 
@@ -580,7 +581,7 @@ choose_nandroid_folder()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -588,7 +589,7 @@ choose_nandroid_folder()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -741,7 +742,7 @@ int get_file_selection(char** headers, char** list) {
                     ++selected;
                     selected = ui_menu_select(selected);
                     break;
-                case KEY_SEND:
+                case KEY_HOME:
                     chosen_item = selected;
 		    if (chosen_item==0) chosen_item = -9;
                     break;
@@ -897,7 +898,7 @@ show_menu_nandroid()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -905,7 +906,7 @@ show_menu_nandroid()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -984,7 +985,7 @@ void show_choose_zip_menu()
     }
 
     static char* headers[] = {  "Choose a zip to apply",
-			        "or press END to return",
+			        "or press BACK to return",
                                 "",
                                 NULL 
     };
@@ -1038,7 +1039,7 @@ show_menu_wipe()
 {
 
     static char* headers[] = { "Choose wipe item,",
-			       "or press END to return",
+			       "or press BACK to return",
 			       "",
 			       NULL };
 
@@ -1081,7 +1082,7 @@ show_menu_wipe()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1089,7 +1090,7 @@ show_menu_wipe()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -1395,7 +1396,7 @@ show_menu_br()
 {
 
     static char* headers[] = { "Choose backup/restore item;",
-			       "or press END to return",
+			       "or press BACK to return",
 			       "",
 			       NULL };
 
@@ -1424,7 +1425,7 @@ show_menu_br()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1432,7 +1433,7 @@ show_menu_br()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -1509,7 +1510,7 @@ show_menu_partition()
 {
 
     static char* headers[] = { "Choose partition item,",
-			       "or press END to return",
+			       "or press BACK to return",
 			       "",
 			       NULL };
 
@@ -1537,7 +1538,7 @@ show_menu_partition()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1545,7 +1546,7 @@ show_menu_partition()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -1616,7 +1617,6 @@ show_menu_partition()
 						sprintf(extsize, "%4d", ext);
 						ui_print("\rExt2-size  = %s MB",extsize);
         	                        	int key = ui_wait_key();
-						if (key == KEY_SEND) {
 						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && key == KEY_POWER) ) {
 	           	                                ui_clear_key_queue();
 							if (ext==0){
@@ -1704,7 +1704,7 @@ show_menu_other()
 {
 
     static char* headers[] = { "Choose item,",
-			       "or press END to return",
+			       "or press BACK to return",
 			       "",
 			       NULL };
 
@@ -1728,7 +1728,7 @@ show_menu_other()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1736,7 +1736,7 @@ show_menu_other()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -1798,7 +1798,7 @@ show_menu_flash()
 {
 
     static char* headers[] = { "Choose item,",
-			       "or press END to return",
+			       "or press BACK to return",
 			       "",
 			       NULL };
 
@@ -1822,7 +1822,7 @@ show_menu_flash()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1830,7 +1830,7 @@ show_menu_flash()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -1949,7 +1949,7 @@ show_menu_mount()
         int key = ui_wait_key();
         int visible = ui_text_visible();
 
-        if (key == KEY_END) {
+        if (key == KEY_BACK) {
             break;
         } else if ((key == KEY_VOLUMEDOWN) && visible) {
             ++selected;
@@ -1957,7 +1957,7 @@ show_menu_mount()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
             if (ui_get_showing_back_button()) {
@@ -2038,11 +2038,11 @@ prompt_and_wait()
         int alt = ui_key_pressed(KEY_LEFTALT) || ui_key_pressed(KEY_RIGHTALT);
         int visible = ui_text_visible();
 
-        if (key == KEY_VOLUMEUP && ui_key_pressed(KEY_END)) {
+        if (key == KEY_VOLUMEUP && ui_key_pressed(KEY_BACK)) {
             // Wait for the keys to be released, to avoid triggering
             // special boot modes (like coming back into recovery!).
             while (ui_key_pressed(KEY_VOLUMEUP) ||
-                   ui_key_pressed(KEY_END)) {
+                   ui_key_pressed(KEY_BACK)) {
                 usleep(1000);
             }
             chosen_item = ITEM_REBOOT;
@@ -2052,7 +2052,7 @@ prompt_and_wait()
         } else if ((key == KEY_VOLUMEUP) && visible) {
             --selected;
             selected = ui_menu_select(selected);
-        } else if ((key == KEY_SEND) && visible ) {
+        } else if ((key == KEY_HOME) && visible ) {
             chosen_item = selected;
         } else if ((key == KEY_POWER) && visible ) {
 	    if (ui_get_showing_back_button()) {
@@ -2145,12 +2145,9 @@ main(int argc, char **argv)
 
     tcflow(STDIN_FILENO, TCOOFF);
 
-    char prop_value[PROPERTY_VALUE_MAX];
-    property_get("ro.modversion", &prop_value[0], "not set");
- 
     ui_init();
     ui_print("Build : ");
-    ui_print(prop_value);
+    ui_print(EXPAND(RECOVERY_VERSION)"\n");
     ui_print("\n");
 
     get_args(&argc, &argv);
