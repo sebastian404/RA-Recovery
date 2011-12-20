@@ -38,6 +38,7 @@ struct MtdPartition {
 struct MtdReadContext {
     const MtdPartition *partition;
     char *buffer;
+    size_t read_size;
     size_t consumed;
     int fd;
 };
@@ -271,43 +272,45 @@ MtdReadContext *mtd_read_partition(const MtdPartition *partition)
     }
 
     ctx->partition = partition;
-    ctx->consumed = partition->erase_size;
+    ctx->read_size = partition->erase_size;
+    ctx->consumed = ctx->read_size;
     return ctx;
 }
 
-static int read_block(const MtdPartition *partition, int fd, char *data)
+static int read_block(const MtdReadContext *ctx, char *data)
 {
     struct mtd_ecc_stats before, after;
-    if (ioctl(fd, ECCGETSTATS, &before)) {
+    off_t pos;
+    ssize_t size;
+
+    if (ioctl(ctx->fd, ECCGETSTATS, &before)) {
         fprintf(stderr, "mtd: ECCGETSTATS error (%s)\n", strerror(errno));
         return -1;
     }
 
-    off_t pos = lseek(fd, 0, SEEK_CUR);
-    ssize_t size = partition->erase_size;
-    while (pos + size <= (int) partition->size) {
-        if (lseek(fd, pos, SEEK_SET) != pos || read(fd, data, size) != size) {
+    pos = lseek(ctx->fd, 0, SEEK_CUR);
+    size = ctx->read_size;
+
+    while (pos + size <= (int) ctx->partition->size) {
+        if (lseek(ctx->fd, pos, SEEK_SET) != pos || read(ctx->fd, data, size) != size) {
             fprintf(stderr, "mtd: read error at 0x%08lx (%s)\n",
                     pos, strerror(errno));
-        } else if (ioctl(fd, ECCGETSTATS, &after)) {
+        } else if (ioctl(ctx->fd, ECCGETSTATS, &after)) {
             fprintf(stderr, "mtd: ECCGETSTATS error (%s)\n", strerror(errno));
             return -1;
         } else if (after.failed != before.failed) {
             fprintf(stderr, "mtd: ECC errors (%d soft, %d hard) at 0x%08lx\n",
                     after.corrected - before.corrected,
                     after.failed - before.failed, pos);
+	    /*
+	     * Reset error counts, so next read may succeed.
+	     */
+	    before = after;
         } else {
-            int i;
-            for (i = 0; i < size; ++i) {
-                if (data[i] != 0) {
-                    return 0;  // Success!
-                }
-            }
-            fprintf(stderr, "mtd: read all-zero block at 0x%08lx; skipping\n",
-                    pos);
+            return 0;  // Success!
         }
 
-        pos += partition->erase_size;
+        pos += ctx->read_size;
     }
 
     errno = ENOSPC;
@@ -318,8 +321,8 @@ ssize_t mtd_read_data(MtdReadContext *ctx, char *data, size_t len)
 {
     ssize_t read = 0;
     while (read < (int) len) {
-        if (ctx->consumed < ctx->partition->erase_size) {
-            size_t avail = ctx->partition->erase_size - ctx->consumed;
+        if (ctx->consumed < ctx->read_size) {
+            size_t avail = ctx->read_size - ctx->consumed;
             size_t copy = len - read < avail ? len - read : avail;
             memcpy(data + read, ctx->buffer + ctx->consumed, copy);
             ctx->consumed += copy;
@@ -327,24 +330,100 @@ ssize_t mtd_read_data(MtdReadContext *ctx, char *data, size_t len)
         }
 
         // Read complete blocks directly into the user's buffer
-        while (ctx->consumed == ctx->partition->erase_size &&
-               len - read >= ctx->partition->erase_size) {
-            if (read_block(ctx->partition, ctx->fd, data + read)) return -1;
-            read += ctx->partition->erase_size;
-        }
-
-        if (read >= len) {
-            return read;
+        while (ctx->consumed == ctx->read_size &&
+               len - read >= ctx->read_size) {
+            if (read_block(ctx, data + read)) return -1;
+            read += ctx->read_size;
         }
 
         // Read the next block into the buffer
-        if (ctx->consumed == ctx->partition->erase_size && read < (int) len) {
-            if (read_block(ctx->partition, ctx->fd, ctx->buffer)) return -1;
+        if (ctx->consumed == ctx->read_size && read < (int) len) {
+            if (read_block(ctx, ctx->buffer)) return -1;
             ctx->consumed = 0;
         }
     }
 
     return read;
+}
+
+ssize_t mtd_read_raw(MtdReadContext *ctx, char *data, size_t len)
+{
+    static const int SPARE_SIZE = (2048 >> 5);
+    struct mtd_info_user mtd_info;
+    struct mtd_oob_buf oob_buf;
+    struct nand_ecclayout ecc_layout;
+    struct nand_oobfree *fp;
+    unsigned char ecc[SPARE_SIZE];
+    char *src, *dst;
+    int i, n, ret;
+
+/*
+ * FIXME: These two ioctls should be cached in MtdReadContext.
+ */
+    ret = ioctl(ctx->fd, MEMGETINFO, &mtd_info);
+    if (ret < 0)
+        return -1;
+
+    ret = ioctl(ctx->fd, ECCGETLAYOUT, &ecc_layout);
+    if (ret < 0)
+        return -1;
+
+    ctx->read_size = mtd_info.writesize;
+    ctx->consumed = ctx->read_size;
+
+/*
+ * Read next good data block.
+ */
+    ret = read_block(ctx, data);
+    if (ret < 0)
+    	return -1;
+
+    dst = src = data + ctx->read_size;
+
+/*
+ * Read OOB data for last block read in read_block().
+ */
+    oob_buf.start = lseek(ctx->fd, 0, SEEK_CUR) - ctx->read_size;
+    oob_buf.length = mtd_info.oobsize;
+    oob_buf.ptr = (unsigned char *) src;
+
+    ret = ioctl(ctx->fd, MEMREADOOB, &oob_buf);
+    if (ret < 0)
+    	return -1;
+
+/*
+ * As yaffs and yaffs2 use mode MEM_OOB_AUTO, but mtdchar uses
+ * MEM_OOB_PLACE, copy the spare data down the hard way.
+ *
+ * Safe away ECC data:
+ */
+    for (i = 0; i < ecc_layout.eccbytes; i++) {
+    	ecc[i] = src[ecc_layout.eccpos[i]];
+    }
+    for ( ; i < SPARE_SIZE; i++) {
+    	ecc[i] = 0;
+    }
+
+/*
+ * Copy yaffs2 spare data down.
+ */
+    n = ecc_layout.oobavail;
+    fp = &ecc_layout.oobfree[0];
+    while (n) {
+    	if (fp->offset) {
+		memmove(dst, src + fp->offset, fp->length); 
+	}
+	dst += fp->length;
+	n -= fp->length;
+	++fp;
+    }
+
+/*
+ * Restore ECC data behind spare data.
+ */
+    memcpy(dst, ecc, (ctx->read_size >> 5) - ecc_layout.oobavail);
+
+    return ctx->read_size + (ctx->read_size >> 5);
 }
 
 void mtd_read_close(MtdReadContext *ctx)
