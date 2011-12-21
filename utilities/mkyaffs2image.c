@@ -35,6 +35,6 @@
 int
 main(int argc, char **argv) {
 
-	return unyaffs_main(argc, argv);
+	return mkyaffs2image_main(argc, argv);
 
     }

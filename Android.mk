@@ -77,6 +77,20 @@ include $(commands_recovery_local_path)/updater/Android.mk
 include $(commands_recovery_local_path)/utilities/Android.mk
 include $(commands_recovery_local_path)/pre-build/Android.mk
 
+# Now let's do recovery symlinks
+BUSYBOX_LINKS := $(shell cat external/busybox/busybox-minimal.links)
+RECOVERY_BUSYBOX_SYMLINKS := $(addprefix $(TARGET_RECOVERY_ROOT_OUT)/sbin/,$(filter-out $(exclude),$(notdir $(BUSYBOX_LINKS))))
+$(RECOVERY_BUSYBOX_SYMLINKS): BUSYBOX_BINARY := busybox
+$(RECOVERY_BUSYBOX_SYMLINKS): $(LOCAL_INSTALLED_MODULE)
+	@echo "Symlink: $@ -> $(BUSYBOX_BINARY)"
+	@mkdir -p $(dir $@)
+	@rm -rf $@
+	$(hide) ln -sf $(BUSYBOX_BINARY) $@
+
+ALL_DEFAULT_INSTALLED_MODULES += $(RECOVERY_BUSYBOX_SYMLINKS)
+
+
+commands_recovery_local_path :=
 endif   # TARGET_ARCH == arm
 endif	# !TARGET_SIMULATOR
 
