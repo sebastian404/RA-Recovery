@@ -551,7 +551,7 @@ void ui_start_menu(char** headers, char** items) {
             menu[i][text_cols-1] = '\0';
         }
 
-        if (gShowBackButton) {
+        if ((gShowBackButton) && (strcmp("Android system recovery",menu[0]) != 0)) {
             strcpy(menu[i], "- Go Back");
             ++i;
         }
