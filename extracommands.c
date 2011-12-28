@@ -70,7 +70,7 @@ void run_script(char *str1,char *str2,char *str3,char *str4,char *str5,char *str
 	}	
        	ui_print("\nany other key to abort.\n");
 	int confirm = ui_wait_key();
-		if ((confirm == KEY_HOME) || ( ui_get_showing_back_button() && confirm == KEY_POWER) ) {
+		if ((confirm == KEY_HOME) || ( ui_get_showing_back_button() && (confirm == KEY_POWER || confirm == KEY_SLEEP) ) ) {
                 	ui_print(str2);
 		        pid_t pid = fork();
                 	if (pid == 0) {
@@ -128,7 +128,7 @@ void usb_toggle_sdcard()
 				ui_print("\nand return to menu\n");
 		       		for (;;) {
         	                        	int key = ui_wait_key();
-						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && key == KEY_POWER) ) {
+						if ((key == KEY_HOME) || ( ui_get_showing_back_button() && (key == KEY_POWER || key == KEY_SLEEP)) ) {
 							ui_print("\nDisabling USB-MS : ");
 						        pid_t pid = fork();
 				                	if (pid == 0) {
