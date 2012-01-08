@@ -81,7 +81,9 @@ SUBNAME=""
 NORECOVERY=0
 NOBOOT=0
 NODATA=0
+NODATADATA=0
 NOSYSTEM=0
+NOCUST=0
 NOMISC=0
 NOCACHE=0
 NOSPLASH1=0
@@ -797,18 +799,38 @@ if [ "$RESTORE" == 1 ]; then
 		$ECHO "Restore path: $RESTOREPATH"
                 $ECHO ""
 
-                umount /system /data 2>/dev/null
+                umount /system 2>/dev/null
 		mount /system 2>/dev/null
+                if [ "`mount | grep system`" == "" ]; then
+                        $ECHO "error: unable to mount /system, aborting"
+                        exit 1
+                fi
+
+		umount /data 2>/dev/null
 		mount /data 2>/dev/null
 		if [ "`mount | grep data`" == "" ]; then
 			$ECHO "error: unable to mount /data, aborting"	
 			exit 1
 		fi
-		if [ "`mount | grep system`" == "" ]; then
-			$ECHO "error: unable to mount /system, aborting"	
-			exit 1
+
+		if [ "$NODATADATA" == 0 ]; then
+			umount /datadata 2>/dev/null
+			mount /datadata 2>/dev/null
+			if [ "`mount | grep system`" == "" ]; then
+				$ECHO "error: unable to mount /datadata, aborting"	
+				exit 1
+			fi
 		fi
-		
+	
+                if [ "$NOCUST" == 0 ]; then
+			umount /cust 2>/dev/null
+                        mount /cust 2>/dev/null
+                        if [ "`mount | grep system`" == "" ]; then
+                                $ECHO "error: unable to mount /cust, aborting"
+                                exit 1
+                        fi
+                fi
+	
 		CWD=$PWD
 		cd $RESTOREPATH
 
@@ -879,8 +901,16 @@ if [ "$RESTORE" == 1 ]; then
                 if [ `ls data* 2>/dev/null | wc -l` == 0 ]; then
                     NODATA=1
                 fi
+		# Amon_RA : If there's no datadata backup set nodatadata to 1 so datadata restore doesn't start
+                if [ `ls datadata* 2>/dev/null | wc -l` == 0 ]; then
+                    NODATADATA=1
+                fi
                 if [ `ls system* 2>/dev/null | wc -l` == 0 ]; then
                     NOSYSTEM=1
+                fi
+		# Amon_RA : If there's no cust backup set nocust to 1 so cust restore doesn't start
+                if [ `ls cust* 2>/dev/null | wc -l` == 0 ]; then
+                    NOCUST=1
                 fi
 		# Amon_RA : If there's no wimax backup set nowimax to 1 so wimax restore doesn't start                
                 if [ `ls wimax* 2>/dev/null | wc -l` == 0 ]; then
@@ -918,16 +948,37 @@ if [ "$RESTORE" == 1 ]; then
 		    $flash_image $image $image.img $OUTPUT
                 done
 
-		for image in data system; do
+		allimages="system data"
+		if [ "$NODATADATA" == 0 ]; then
+		        allimages=$allimages" datadata"
+		fi
+
+		if [ "$NOCUST" == 0 ]; then
+		        allimages=$allimages" cust"
+		fi
+
+		for image in $allimages; do
                         if [ "$NODATA" == "1" -a "$image" == "data" ]; then
                             $ECHO ""
                             $ECHO "Not restoring data image!"
                             $ECHO ""
                             continue
                         fi
+			if [ "$NODATA" == "1" -a "$image" == "datadata" ]; then
+                            $ECHO ""
+                            $ECHO "Not restoring datadata image!"
+                            $ECHO ""
+                            continue
+                        fi
                         if [ "$NOSYSTEM" == "1" -a "$image" == "system" ]; then
                             $ECHO ""
                             $ECHO "Not restoring system image!"
+                            $ECHO ""
+                            continue
+                        fi
+			if [ "$NOSYSTEM" == "1" -a "$image" == "cust" ]; then
+                            $ECHO ""
+                            $ECHO "Not restoring cust image!"
                             $ECHO ""
                             continue
                         fi
@@ -1038,6 +1089,17 @@ case $FAIL in
 	2) $ECHO "Error mounting data read-only"; umount /system /data /sdcard; exit 1;;
 	3) $ECHO "Error mounting sdcard read-write"; umount /system /data /sdcard; exit 1;;
 esac
+
+# check for existance of /datadata and /cust
+NODATADATA=0
+umount /datadata 2>/dev/null
+mount -o ro /datadata || NODATADATA=1
+umount /datadata
+
+NOCUST=0
+umount /cust 2>/dev/null
+mount -o ro /cust || NOCUST=1
+umount /cust
 
 if [ ! "$SUBNAME" == "" ]; then
     SUBNAME=$SUBNAME-
@@ -1208,15 +1270,24 @@ for image in boot recovery misc wimax; do
 done
 
 # 6
-for image in system data cache; do
+allimages="system data cache"
+if [ "$NODATADATA" == 0 ]; then
+	allimages=$allimages" datadata"
+fi
+
+if [ "$NOCUST" == 0 ]; then
+        allimages=$allimages" cust"
+fi
+
+for image in $allimages; do
     case $image in
-        system)
+        system | cust)
             if [ "$NOSYSTEM" == 1 ]; then
                 $ECHO "Dump of the system partition suppressed."
                 continue
             fi
             ;;
-        data)
+        data | datadata)
             if [ "$NODATA" == 1 ]; then
                 $ECHO "Dump of the data partition suppressed."
                 continue
